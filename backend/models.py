@@ -1,8 +1,14 @@
-from sqlalchemy import Column, Integer, String
-from database import Base
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
-from sqlalchemy import Column, Integer, String, Text, UniqueConstraint
-from database import Base
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    score = Column(Integer, default=0)
+    disabled = Column(Boolean, default=False)
 
 
 class Verse(Base):
@@ -22,4 +28,21 @@ class Verse(Base):
 
     def __repr__(self):
         return f"{self.book_name} {self.chapter}:{self.verse}"
+    
+    
+class HeroBase(SQLModel):
+    name: str = Field(index=True)
+    secret_name: str
+    age: int | None = Field(default=None, index=True)
 
+
+class Hero(HeroBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+
+class HeroCreate(HeroBase):
+    pass
+
+
+class HeroPublic(HeroBase):
+    id: int
