@@ -1,4 +1,5 @@
-import pandas as pd
+# get only the verses from the kjv.json file and remove ambiguous unicode characters
+
 import json
 
 def main():
@@ -14,7 +15,7 @@ def main():
         verse['text'] = verse['text'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
     
     # save as another JSON file
-    with open('kjv_bible_verses_no_ambiguous_unicode.json', 'w', encoding='utf-8') as f:
+    with open('kjv_bible.json', 'w', encoding='utf-8') as f:
         json.dump(bible_dict, f, ensure_ascii=False, indent=4)
     
     
