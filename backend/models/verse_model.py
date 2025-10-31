@@ -14,4 +14,4 @@ class Verse(VerseBase, table=True):
 
 # read model (for API responses)
 class VersePublic(VerseBase):
-    id: int
+    pass

@@ -26,29 +26,43 @@ app = FastAPI(lifespan=lifespan)
 
 ###### endpoints for verses below ######
 
-# @app.get("/verses/")
-# def get_verses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-#     return db.exec(select(Verse).offset(skip).limit(limit)).all()
+@app.get("/verses/", response_model=list[VersePublic])
+def read_verses():
+    with Session(engine) as session:
+        verses = session.exec(select(Verse)).all()
+        return verses
 
-# @app.get("/verses/{book}")
-# def get_verses_by_book(book: str, db: Session = Depends(get_db)):
-#     return db.query(Verse).filter(Verse.book == book).all()
+@app.get("/verses/{book}", response_model=list[VersePublic])
+def get_verses_by_book(book: str):
+    with Session(engine) as session:
+        verses = session.exec(select(Verse).where(Verse.book_name == book)).all()
+        if not verses:
+            raise HTTPException(status_code=404, detail="Book not found")
+        return verses
 
-# @app.get("/verses/{book}/{chapter}")
-# def get_verses_by_chapter(book: str, chapter: int, db: Session = Depends(get_db)):
-#     return db.query(Verse).filter(
-#         Verse.book == book,
-#         Verse.chapter == chapter
-#     ).all()
+@app.get("/verses/{book}/{chapter}", response_model=list[VersePublic])
+def get_verses_by_chapter(book: str, chapter: int):
+    with Session(engine) as session:
+        verses = session.exec(select(Verse).where(
+            Verse.book_name == book,
+            Verse.chapter == chapter
+        )).all()
+        if not verses:
+            raise HTTPException(status_code=404, detail="Chapter not found")
+        return verses
 
-# @app.get("/verses/{book}/{chapter}/{verse}")
-# def get_verse(book: str, chapter: int, verse: int, db: Session = Depends(get_db)):
-#     return db.query(Verse).filter(
-#         Verse.book == book,
-#         Verse.chapter == chapter,
-#         Verse.verse == verse
-#     ).first()
+@app.get("/verses/{book}/{chapter}/{verse}", response_model=VersePublic)
+def get_verse_by_reference(book: str, chapter: int, verse: int):
+    with Session(engine) as session:
+        verse = session.exec(select(Verse).where(
+            Verse.book_name == book,
+            Verse.chapter == chapter,
+            Verse.verse == verse
+        )).first()
+        if not verse:
+            raise HTTPException(status_code=404, detail="Verse not found")
+        return verse
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello, FastAPI + SQLite!"}
+    return {"message": "Hello Bible Guesser!"}
