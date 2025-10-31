@@ -3,14 +3,29 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from contextlib import asynccontextmanager
 from sqlmodel import Session, select
 from typing import Annotated
+from datetime import datetime, timedelta, timezone
+from dotenv import load_dotenv
+from os import getenv
+import jwt
+import uvicorn
+from jwt.exceptions import InvalidTokenError
+from pwdlib import PasswordHash
+
 
 # local imports
 from database import create_db_and_tables, get_session
 from models.user_model import User, UserCreate, UserPublic, UserUpdate
 from models.verse_model import Verse, VersePublic
+from models.token_model import Token, TokenData
 from populate_verse_table.populate_verses import populate_verses
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+load_dotenv()
+
+SECRET_KEY = getenv("SECRET_KEY")
+ALGORITHM = getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,30 +41,69 @@ app = FastAPI(lifespan=lifespan)
 
 ### security tutorial ###
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+password_hash = PasswordHash.recommended()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+app = FastAPI()
 
 
-def fake_decode_token(token):
-    # This doesn't provide any security at all
-    # Check the next version
-    user = get_user(fake_users_db, token)
-    return user
+def verify_password(plain_password, hashed_password):
+    return password_hash.verify(plain_password, hashed_password)
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    user = fake_decode_token(token)
+def get_password_hash(password):
+    return password_hash.hash(password)
+
+
+def get_user(session, username: str):
+    user = session.exec(select(User).where(User.username == username)).first()
+    if user:
+        return user
+    else:
+        return None
+
+
+def authenticate_user(session, username: str, password: str):
+    user = get_user(session=session, username=username)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
     return user
 
 
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], session: Session = Depends(get_session)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except InvalidTokenError:
+        raise credentials_exception
+    user = get_user(session=session, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+"""Any route depending on this requires a valid JWT bearer token"""
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
@@ -57,29 +111,66 @@ async def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+"""Login endpoint to get JWT token"""
+@app.post("/users/token")
+async def login_for_access_token(
+        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        session: Session = Depends(get_session)
+    ) -> Token:
+    user = authenticate_user(session=session, username=form_data.username, password=form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return Token(access_token=access_token, token_type="bearer")
 
-@app.post("/token")
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user_dict = fake_users_db.get(form_data.username)
-    if not user_dict:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-    user = UserInDB(**user_dict)
-    hashed_password = fake_hash_password(form_data.password)
-    if not hashed_password == user.hashed_password:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
 
-    return {"access_token": user.username, "token_type": "bearer"}
-
-
-@app.get("/users/me")
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
-    return current_user
-
+"""Sign In endpoint"""
+@app.post("/users/signin", response_model=UserPublic)
+def create_user(*, session: Session = Depends(get_session), user: UserCreate):
+    # Check if username already exists
+    db_user = session.exec(
+        select(User).where(User.username == user.username)
+    ).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+    
+    # Create new user with hashed password
+    hashed_password = get_password_hash(user.password)
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_password,
+        disabled=False,
+        score=0
+    )
+    
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+    
+    return db_user
 
 ###### endpoints for users below ######
 
+@app.get("/users/me/", response_model=User)
+async def read_users_me(
+        current_user: Annotated[User, Depends(get_current_active_user)],
+    ):
+    return current_user
+
+
+@app.get("/users/me/items/")
+async def read_own_items(
+        current_user: Annotated[User, Depends(get_current_active_user)],
+    ):
+    return [{"item_id": "Foo", "owner": current_user.username}]
 
 
 ###### endpoints for verses below #######
@@ -121,3 +212,7 @@ def get_verse_by_reference(*, session: Session = Depends(get_session),book: str,
 @app.get("/")
 def read_root():
     return {"message": "Hello there Bible Guesser!"}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)

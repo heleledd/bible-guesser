@@ -2,11 +2,13 @@ from sqlmodel import Session, select
 from sqlalchemy import func
 from pathlib import Path
 import json
+from dotenv import load_dotenv
+from os import getenv
 from database import engine
 from models.verse_model import Verse
 
-
-BIBLE_JSON = Path(__file__).parent / "json_bibles/kjv_bible.json"
+load_dotenv()
+bible_json_path = Path(__file__).parent / getenv("BIBLE_JSON")
 
 async def populate_verses():
     # Check if database is already populated
@@ -18,7 +20,7 @@ async def populate_verses():
 
         print("Populating database with verses...")
         # Load verses from your JSON file
-        with open(BIBLE_JSON, "r", encoding="utf-8") as f:
+        with open(bible_json_path, "r", encoding="utf-8") as f:
             verses = json.load(f)
         
         # Insert verses in chunks
