@@ -46,7 +46,12 @@ export const auth = {
 };
 
 export const verses = {
-  getAllVerses: async () => {
+    getRandomVerse: async () => {
+    const response = await api.get('/verses/random');
+    return response.data;
+  },
+  
+    getAllVerses: async () => {
     const response = await api.get('/verses/');
     return response.data;
   },
@@ -64,7 +69,7 @@ export const verses = {
   getVerseByReference: async (book, chapter, verse) => {
     const response = await api.get(`/verses/${book}/${chapter}/${verse}`);
     return response.data;
-  },
+  }
 };
 
 export default {

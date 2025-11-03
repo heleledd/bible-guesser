@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { verses } from '../../services/api'
 
 function Game() {
-  const [verse, setVerse] = useState('')
+  const [verse, setVerse] = useState({book_name:'', book:0, chapter:0, verse:0, text:''})
   const [guess, setGuess] = useState({ book: '', chapter: '', verse: '' })
   const [score, setScore] = useState(0)
 
@@ -11,26 +12,38 @@ function Game() {
   }, [])
 
   const fetchNewVerse = async () => {
-    // TODO: Implement API call to get random verse
-    // setVerse(data.verse)
-    // const response = await axios.get('/api/random-verse')
-    // setVerse(response.data.verse)
+    try {
+      setError('')
+      const data = await verses.getRandomVerse()
+      setVerse(data)
+    } catch (error) {
+      setError('Failed to load verse. Please try again.')
+      console.error('Error fetching random verse:', error)
+    }
   }
-
+  
   const handleSubmit = (e) => {
     e.preventDefault()
-    // TODO: Implement guess verification
-    // if (isCorrect) setScore(score + 1)
-    // 
-    fetchNewVerse()
-  }
+    setError('')
+    
+    // Verify the guess
+    if (
+      guess.book.toLowerCase() === verse.book_name.toLowerCase() &&
+      Number(guess.chapter) === verse.chapter &&
+      Number(guess.verse) === verse.verse
+    ) {
+      setScore(score + 1)
+    }
 
   return (
     <div className="game-container">
       <h2>Guess the Bible Verse</h2>
       <div className="verse-display">
-        <p>{verse}</p>
+        <p>{verse.text}</p>
       </div>
+      <form onSubmit={refreshNewVerse}>
+        <button type="submit">Refresh Verse</button>
+      </form>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -57,6 +70,7 @@ function Game() {
       </div>
     </div>
   )
+}
 }
 
 export default Game
