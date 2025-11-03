@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { auth } from '../../services/api'
 
 function Signup({ setIsAuthenticated }) {
   const [userData, setUserData] = useState({
@@ -9,12 +10,30 @@ function Signup({ setIsAuthenticated }) {
     confirmPassword: ''
   })
   const navigate = useNavigate()
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Implement API call to backend
-    setIsAuthenticated(true)
-    navigate('/game')
+        setError('')
+        
+        try {
+          // Sign up
+          const signup_data = await auth.signup(userData)
+          
+          // get token by logging in
+          const login_data = await auth.login(userData.username, userData.password)
+
+          // Store the token
+          localStorage.setItem('token', login_data.access_token)
+          
+          // Verify token by fetching user data
+          await auth.getCurrentUser()
+          
+          setIsAuthenticated(true)
+          navigate('/game')
+        } catch (err) {
+          setError(err.response?.data?.detail || 'Failed to login. Please check your credentials.')
+        }
   }
 
   return (
