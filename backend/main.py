@@ -11,7 +11,6 @@ import uvicorn
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 
-
 # local imports
 from database import create_db_and_tables, get_session
 from models.user_model import User, UserCreate, UserPublic, UserUpdate
