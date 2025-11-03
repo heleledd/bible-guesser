@@ -5,6 +5,10 @@ const API_URL = 'http://localhost:8000';
 // Create axios instance with base URL
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: false,
+  headers: {
+    'Access-Control-Allow-Origin': '*'
+  }
 });
 
 // Add token to requests if it exists
