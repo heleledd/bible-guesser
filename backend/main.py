@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from typing import Annotated
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
@@ -188,6 +188,13 @@ async def read_own_items(
 
 ###### endpoints for verses below #######
 
+@app.get("/verses/random", response_model=VersePublic)
+def get_random_verse(*, session: Session = Depends(get_session)):
+    verse = session.exec(select(Verse).order_by(func.random())).first()
+    if not verse:
+        raise HTTPException(status_code=404, detail="Verse not found")
+    return verse
+
 # this might be a bit too chonky
 @app.get("/verses/", response_model=list[VersePublic])
 def read_verses(*, session: Session = Depends(get_session)):
@@ -212,7 +219,7 @@ def get_verses_by_chapter(*, session: Session = Depends(get_session),book: str, 
     return verses
 
 @app.get("/verses/{book}/{chapter}/{verse}", response_model=VersePublic)
-def get_verse_by_reference(*, session: Session = Depends(get_session),book: str, chapter: int, verse: int):
+def get_verse_by_reference(*, session: Session = Depends(get_session), book: str, chapter: int, verse: int):
     verse = session.exec(select(Verse).where(
         Verse.book_name == book,
         Verse.chapter == chapter,
