@@ -15,6 +15,7 @@ function Leaderboard() {
   return (
     <div className="leaderboard-container">
       <h2>Leaderboard</h2>
+      <p>How do the points work??</p>
       <div className="leaderboard-list">
         {leaderboard.map((entry, index) => (
           <div key={index} className="leaderboard-entry">

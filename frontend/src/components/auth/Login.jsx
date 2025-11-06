@@ -21,6 +21,7 @@ function Login({ setIsAuthenticated }) {
       // Verify token by fetching user data
       await auth.getCurrentUser()
       
+      setUser({ username: response.data.username })
       setIsAuthenticated(true)
       navigate('/game')
     } catch (err) {
