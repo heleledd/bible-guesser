@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { leaderboard } from '../../services/api'
 
 function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState([])
@@ -8,14 +9,15 @@ function Leaderboard() {
   }, [])
 
   const fetchLeaderboard = async () => {
-    // TODO: Implement API call to get leaderboard data
-    // setLeaderboard(data)
+    const data = await leaderboard.getLeaderboard()
+    setLeaderboard(data)
+
   }
 
   return (
     <div className="leaderboard-container">
       <h2>Leaderboard</h2>
-      <p>How do the points work??</p>
+      <p>Behold!! The top players are:</p>
       <div className="leaderboard-list">
         {leaderboard.map((entry, index) => (
           <div key={index} className="leaderboard-entry">

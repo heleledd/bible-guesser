@@ -45,6 +45,13 @@ export const auth = {
   },
 };
 
+export const leaderboard = {
+  getLeaderboard: async () => {
+    const response = await api.get('/leaderboard/');
+    return response.data;
+  },
+};
+
 export const verses = {
     getRandomVerse: async () => {
     const response = await api.get('/verses/random');

@@ -179,11 +179,15 @@ async def read_users_me(
     return current_user
 
 
-@app.get("/users/me/items/")
-async def read_own_items(
+
+
+@app.patch("/users/score/update", response_model=UserUpdate)
+async def update_own_score(
         current_user: Annotated[User, Depends(get_current_active_user)],
+        score_change: int,
     ):
-    return [{"item_id": "Foo", "owner": current_user.username}]
+    current_user.score += score_change
+    return current_user
 
 
 ###### endpoints for verses below #######

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth } from '../../services/api'
 
-function Login({ setIsAuthenticated }) {
+function Login({ setIsAuthenticated, setUser }) {
   const [credentials, setCredentials] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -19,9 +19,9 @@ function Login({ setIsAuthenticated }) {
       localStorage.setItem('token', data.access_token)
       
       // Verify token by fetching user data
-      await auth.getCurrentUser()
-      
-      setUser({ username: response.data.username })
+      const user_response = await auth.getCurrentUser()
+
+      setUser({ username: user_response.username })
       setIsAuthenticated(true)
       navigate('/game')
     } catch (err) {

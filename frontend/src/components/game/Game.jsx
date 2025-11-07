@@ -60,7 +60,11 @@ function Game() {
     } else {
       setScore((prev) => prev + newPoints);
       setScoreMessage(`Nice! You earned ${newPoints} points. The correct answer was ` + `${verse.book_name} ${verse.chapter}:${verse.verse}.`);
+
+      // update user score in backend!!
+      
     }
+
 
     // Load next verse
     fetchNewVerse();
