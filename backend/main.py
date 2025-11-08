@@ -179,8 +179,6 @@ async def read_users_me(
     return current_user
 
 
-
-
 @app.patch("/users/score/update", response_model=UserUpdate)
 async def update_own_score(
         *, session: Session = Depends(get_session),
@@ -193,6 +191,16 @@ async def update_own_score(
     session.refresh(current_user)
     
     return current_user
+
+# fetch top 10 users by score
+@app.get("/leaderboard", response_model=list[UserUpdate])
+async def get_leaderboard(
+    *, session: Session = Depends(get_session),
+):
+    top_scorers = session.exec(
+        select(User).order_by(User.score.desc()).limit(10)
+    ).all()
+    return top_scorers
 
 
 ###### endpoints for verses below #######
