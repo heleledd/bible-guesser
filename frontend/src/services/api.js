@@ -5,19 +5,10 @@ const API_URL = 'http://localhost:8000';
 // Create axios instance with base URL
 const api = axios.create({
   baseURL: API_URL,
-  withCredentials: false,
+  withCredentials: true, // Enable sending cookies with requests
   headers: {
     'Access-Control-Allow-Origin': '*'
   }
-});
-
-// Add token to requests if it exists
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
 });
 
 export const auth = {
@@ -43,6 +34,11 @@ export const auth = {
     const response = await api.get('/users/me/');
     return response.data;
   },
+
+  logout: async () => {
+    const response = await api.post('/users/logout/');
+    return response.data;
+  }
 };
 
 export const leaderboard = {

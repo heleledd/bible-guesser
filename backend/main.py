@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Response, Cookie
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -7,9 +7,9 @@ from typing import Annotated
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from os import getenv
+from jose import JWTError
 import jwt
 import uvicorn
-from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 
 # local imports
@@ -97,23 +97,32 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], session: Session = Depends(get_session)):
+async def get_current_user(
+    access_token: Annotated[str | None, Cookie()] = None,
+    session: Session = Depends(get_session)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+    if access_token is None:
+        raise credentials_exception
+
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str | None = payload.get("sub")
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
-    except InvalidTokenError:
+    except JWTError:
         raise credentials_exception
+
     user = get_user(session=session, username=token_data.username)
     if user is None:
         raise credentials_exception
+
     return user
 
 """Any route depending on this requires a valid JWT bearer token"""
@@ -127,6 +136,7 @@ async def get_current_active_user(
 """Login endpoint to get JWT token"""
 @app.post("/users/token")
 async def login_for_access_token(
+        response: Response,
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         session: Session = Depends(get_session)
     ) -> Token:
@@ -141,7 +151,17 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer")
+    
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,           # cannot be read by JS
+        secure=True,             # only sent over HTTPS
+        samesite="lax",          # prevent CSRF issues
+        max_age=3600             # 1 hour
+    )
+    
+    return {"message": "Login successful"}
 
 
 """Sign In endpoint"""
@@ -169,6 +189,14 @@ def create_user(*, session: Session = Depends(get_session), user: UserCreate):
     session.refresh(db_user)
     
     return db_user
+
+@app.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        path="/"
+    )
+    return {"message": "Logout successful"}
 
 ###### endpoints for users below ######
 

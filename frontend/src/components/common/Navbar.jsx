@@ -1,11 +1,21 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { auth } from '../../services/api'
 
 function Navbar({ isAuthenticated, setIsAuthenticated }) {
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    setIsAuthenticated(false)
-    navigate('/login')
+  const handleLogout = async () => {
+    
+    // clear cookies or tokens
+
+    try {
+      await auth.logout()
+      setIsAuthenticated(false)
+      setUser(null)
+      navigate('/login') // redirect to login page
+    } catch (err) {
+      console.error("Failed to logout:", err)
+    }
   }
 
   return (
