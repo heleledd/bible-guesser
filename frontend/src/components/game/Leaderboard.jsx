@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { leaderboard as leaderboardAPI } from '../../services/api'
 import "../../styles/Leaderboard.css"
 
-function Leaderboard() {
+function Leaderboard({ setIsAuthenticated, setUser }) {
   const [leaders, setLeaders] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)

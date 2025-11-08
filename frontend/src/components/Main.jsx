@@ -26,7 +26,7 @@ function Main() {
         <Routes>
           <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} setUser={setUser} />} />
           <Route path="/signup" element={<Signup setIsAuthenticated={setIsAuthenticated} setUser={setUser} />} />
-          <Route path="/game" element={<Game isAuthenticated={isAuthenticated} />} />
+          <Route path="/game" element={<Game isAuthenticated={isAuthenticated} setUser={setUser} />} />
           <Route 
             path="/leaderboard" 
             element={isAuthenticated ? <Leaderboard /> : <Navigate to="/login" />} 
