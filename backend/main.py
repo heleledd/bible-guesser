@@ -14,7 +14,7 @@ from pwdlib import PasswordHash
 
 # local imports
 from database import create_db_and_tables, get_session
-from models.user_model import User, UserCreate, UserPublic, UserUpdate
+from models.user_model import User, UserCreate, UserPublic, UserUpdate, UserScoreUpdate
 from models.verse_model import Verse, VersePublic
 from models.token_model import Token, TokenData
 from populate_verse_table.populate_verses import populate_verses
@@ -183,10 +183,15 @@ async def read_users_me(
 
 @app.patch("/users/score/update", response_model=UserUpdate)
 async def update_own_score(
+        *, session: Session = Depends(get_session),
         current_user: Annotated[User, Depends(get_current_active_user)],
-        score_change: int,
+        update: UserScoreUpdate,
     ):
-    current_user.score += score_change
+    current_user.score = update.score_change + current_user.score
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+    
     return current_user
 
 
@@ -199,11 +204,6 @@ def get_random_verse(*, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Verse not found")
     return verse
 
-# this might be a bit too chonky
-@app.get("/verses/", response_model=list[VersePublic])
-def read_verses(*, session: Session = Depends(get_session)):
-        verses = session.exec(select(Verse)).all()
-        return verses
 
 @app.get("/verses/{book}", response_model=list[VersePublic])
 def get_verses_by_book(*, session: Session = Depends(get_session),book: str):

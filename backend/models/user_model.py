@@ -20,6 +20,11 @@ class UserCreate(UserBase):
 class UserPublic(UserBase):
     id: int
     
-"""Update Model (optional, for PATCH /users/{id})"""
+"""Update Model (optional, for returning the user's score)"""
 class UserUpdate(SQLModel):
+    username: str | None = None
     score: int | None = None
+    
+"""Score Update Model (for PATCH /users/score/update)"""
+class UserScoreUpdate(SQLModel):
+    score_change: int

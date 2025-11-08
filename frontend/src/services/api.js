@@ -50,6 +50,11 @@ export const leaderboard = {
     const response = await api.get('/leaderboard/');
     return response.data;
   },
+
+  updateUserScore: async (score_change) => {
+    const response = await api.post('/users/score/update', { "score_change": score_change });
+    return response.data;
+  }
 };
 
 export const verses = {

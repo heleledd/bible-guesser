@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { verses } from '../../services/api'
+import { leaderboard } from '../../services/api'
 
 function Game() {
   const [verse, setVerse] = useState({book_name:'', book:0, chapter:0, verse:0, text:''})
@@ -28,7 +29,7 @@ function Game() {
     }
   }
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
@@ -62,9 +63,14 @@ function Game() {
       setScoreMessage(`Nice! You earned ${newPoints} points. The correct answer was ` + `${verse.book_name} ${verse.chapter}:${verse.verse}.`);
 
       // update user score in backend!!
-      
+        try {
+          await leaderboard.updateUserScore(newPoints);
+        } catch (err) {
+          console.error('Failed to update score in backend:', err);
+        }
     }
 
+    
 
     // Load next verse
     fetchNewVerse();
