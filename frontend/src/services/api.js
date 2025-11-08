@@ -52,7 +52,7 @@ export const leaderboard = {
   },
 
   updateUserScore: async (score_change) => {
-    const response = await api.post('/users/score/update', { "score_change": score_change });
+    const response = await api.patch('/users/score/update', { "score_change": score_change });
     return response.data;
   }
 };
