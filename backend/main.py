@@ -7,10 +7,10 @@ from typing import Annotated
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from os import getenv
-from jose import JWTError
 import jwt
 import uvicorn
 from pwdlib import PasswordHash
+from jwt.exceptions import InvalidTokenError
 
 # local imports
 from database import create_db_and_tables, get_session
@@ -116,7 +116,7 @@ async def get_current_user(
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
-    except JWTError:
+    except InvalidTokenError:
         raise credentials_exception
 
     user = get_user(session=session, username=token_data.username)
@@ -139,7 +139,7 @@ async def login_for_access_token(
         response: Response,
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         session: Session = Depends(get_session)
-    ) -> Token:
+    ):
     user = authenticate_user(session=session, username=form_data.username, password=form_data.password)
     if not user:
         raise HTTPException(
@@ -156,8 +156,9 @@ async def login_for_access_token(
         key="access_token",
         value=access_token,
         httponly=True,           # cannot be read by JS
-        secure=True,             # only sent over HTTPS
-        samesite="lax",          # prevent CSRF issues
+        secure=False,             # only sent over HTTPS TODO: set to True in production
+        path="/",                 # cookie valid for entire site
+        samesite="lax",          # prevent CSRF issues TODO: consider "strict" in production
         max_age=3600             # 1 hour
     )
     
