@@ -16,7 +16,7 @@ from jwt.exceptions import InvalidTokenError
 from database import create_db_and_tables, get_session
 from models.user_model import User, UserCreate, UserPublic, UserUpdate, UserScoreUpdate
 from models.verse_model import Verse, VersePublic
-from models.token_model import Token, TokenData
+from models.token_model import TokenData
 from populate_verse_table.populate_verses import populate_verses
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -42,7 +42,7 @@ app = FastAPI(lifespan=lifespan)
 ## accept requests from frontend at localhost:5173
 
 origins = [
-    "http://localhost:5173"
+    "http://localhost:5173" # TODO: change to production URL
 ]
 
 app.add_middleware(
