@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth } from '../../services/api'
+import "../../styles/Auth.css"
 
 function Signup({ setIsAuthenticated }) {
   const [userData, setUserData] = useState({
@@ -22,9 +23,6 @@ function Signup({ setIsAuthenticated }) {
           
           // get token by logging in
           const login_data = await auth.login(userData.username, userData.password)
-
-          // Store the token
-          localStorage.setItem('token', login_data.access_token)
           
           // Verify token by fetching user data
           await auth.getCurrentUser()

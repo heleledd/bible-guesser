@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth } from '../../services/api'
+import "../../styles/Auth.css"
 
 function Login({ setIsAuthenticated, setUser }) {
   const [credentials, setCredentials] = useState({ username: '', password: '' })

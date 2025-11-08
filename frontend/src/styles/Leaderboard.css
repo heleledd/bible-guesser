@@ -1,0 +1,13 @@
+.leaderboard-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.leaderboard-entry {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #6A994E;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}

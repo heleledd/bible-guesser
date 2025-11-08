@@ -1,0 +1,52 @@
+.game-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #BC4749;
+  border-radius: 8px;
+  border: 2px solid ;
+  font-family: "Momo Trust Sans", sans-serif;
+}
+
+.verse-display {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #EFE9DB;
+  border-radius: 4px;
+  border: 2px solid #A03436;
+}
+
+.verse-text {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  font-weight: bold;
+  color: #2D4F34
+}
+
+.game-btn {
+  position: relative;
+  display: inline-block;
+  padding: 8px 18px;
+  border: 2px solid #6A994E;
+  color: #EFE9DB;
+  background-color: #6A994E;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  margin: 1rem 0;
+}
+
+.game-form input {
+  border-radius: 4px;
+  padding: 0.5rem;
+  border: 2px solid #A03436;
+  color: #A03436;
+  background-color: #EFE9DB;
+}
+
+button:hover {
+  filter: brightness(0.9);
+}

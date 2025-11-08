@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { verses } from '../../services/api'
 import { leaderboard } from '../../services/api'
+import "../../styles/Game.css"
 
 function Game() {
   const [verse, setVerse] = useState({book_name:'', book:0, chapter:0, verse:0, text:''})
@@ -78,16 +79,15 @@ function Game() {
 
   return (
     <div className="game-container">
-      <h2>Guess the Bible Verse</h2>
        <div className="verse-display">
-        {loading ? (
+        <div className="verse-text">{loading ? (
           <p>Loading verse...</p>
         ) : (
           <p>{verse.text || 'No verse loaded'}</p>
-        )}
+        )}</div>
       </div>
-      <button onClick={fetchNewVerse}>Refresh Verse</button>
-      <form onSubmit={handleSubmit}>
+      <button className="game-btn" onClick={fetchNewVerse}>Refresh Verse</button>
+      <form className="game-form" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Book"
@@ -106,7 +106,7 @@ function Game() {
           value={guess.verse}
           onChange={(e) => setGuess({ ...guess, verse: e.target.value })}
         />
-        <button type="submit">Submit Guess</button>
+        <button className="game-btn" type="submit">Submit Guess</button>
       </form>
       <div className="score">
         {scoreMessage && <div className="score-message">{scoreMessage}</div>}

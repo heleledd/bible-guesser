@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { leaderboard as leaderboardAPI } from '../../services/api'
+import "../../styles/Leaderboard.css"
 
 function Leaderboard() {
   const [leaders, setLeaders] = useState([])
