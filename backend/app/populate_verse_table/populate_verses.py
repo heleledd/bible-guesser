@@ -4,8 +4,8 @@ from pathlib import Path
 import json
 from dotenv import load_dotenv
 from os import getenv
-from database import engine
-from models.verse_model import Verse
+from app.database import engine
+from app.models.verse_model import Verse
 
 load_dotenv()
 bible_json_path = Path(__file__).parent / getenv("BIBLE_JSON")

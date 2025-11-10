@@ -13,11 +13,11 @@ from pwdlib import PasswordHash
 from jwt.exceptions import InvalidTokenError
 
 # local imports
-from database import create_db_and_tables, get_session
-from models.user_model import User, UserCreate, UserPublic, UserUpdate, UserScoreUpdate
-from models.verse_model import Verse, VersePublic
-from models.token_model import TokenData
-from populate_verse_table.populate_verses import populate_verses
+from app.database import create_db_and_tables, get_session
+from app.models.user_model import User, UserCreate, UserPublic, UserUpdate, UserScoreUpdate
+from app.models.verse_model import Verse, VersePublic
+from app.models.token_model import TokenData
+from app.populate_verse_table.populate_verses import populate_verses
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 

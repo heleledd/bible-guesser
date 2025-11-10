@@ -1,9 +1,10 @@
-from sqlmodel import Field, Session, SQLModel, create_engine, select
-from models.verse_model import Verse  
-from models.user_model import User
+from sqlmodel import Session, SQLModel, create_engine
+import os
 
-SQLITE_FILE_NAME = "database.db"
-SQLITE_URL = f"sqlite:///{SQLITE_FILE_NAME}"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # path to backend/app/
+DB_PATH = os.path.join(BASE_DIR, "database.db")
+
+SQLITE_URL = f"sqlite:///{DB_PATH}"
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(
