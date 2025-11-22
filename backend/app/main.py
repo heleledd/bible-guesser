@@ -40,9 +40,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 ## accept requests from frontend at localhost:5173
-
+# we're not allowed to have * here when withCredentials is True 
+# or we get a CORS error, so we must be specific about the origin
 origins = [
-    "*" # TODO: change to production URL
+    "http://localhost:5173",  # Frontend development server
 ]
 
 app.add_middleware(

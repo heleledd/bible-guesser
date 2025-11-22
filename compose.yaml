@@ -15,10 +15,11 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        #- VITE_API_URL=http://my_production_backend:8000
+        # we default to localhost for development
     container_name: frontend
     ports:
       - "5173:5173"
-    environment:
-      - VITE_API_URL=http://backend:8000
     depends_on:
       - backend

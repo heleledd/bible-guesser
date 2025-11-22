@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 // Access the environment variable
-const API_URL = import.meta.env.VITE_API_URL || 'http://backend:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+// Log the API URL being used
+console.log('Frontend is using API URL:', API_URL);
 
 // Create axios instance with base URL
 const api = axios.create({

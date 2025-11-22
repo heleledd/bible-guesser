@@ -32,3 +32,12 @@ npm run dev
 ```
 
 The react app should now be running at localhost:5173
+
+### 4. Use docker compose to read compose.yaml and build and run both containers 
+
+```bash
+docker-compose up --build
+```
+
+You can then browse to the React front end at http://localhost:5173 
+Remember the React app runs ** in your browser ** so for development the API_URL needs to be http://localhost:8000, **not** http://backend:8000 because your local browser can't resolve "backend", that only works inside the containers 

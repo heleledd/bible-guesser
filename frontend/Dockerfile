@@ -1,6 +1,12 @@
 # Use official Node.js image
 FROM node:24-alpine AS build
 
+# Accept build argument for API URL
+# Note that VITE reads this at container build time, not run time
+# hence passing this as an environment variable at runtime doesn't work
+ARG VITE_API_URL=http://localhost:8000
+ENV VITE_API_URL=$VITE_API_URL
+
 WORKDIR /app
 
 # Copy package files and install dependencies
