@@ -42,7 +42,7 @@ app = FastAPI(lifespan=lifespan)
 ## accept requests from frontend at localhost:5173
 
 origins = [
-    "http://localhost:5173" # TODO: change to production URL
+    "*" # TODO: change to production URL
 ]
 
 app.add_middleware(
